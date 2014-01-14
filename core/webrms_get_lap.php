@@ -38,14 +38,14 @@ if($lap_data>0){
 
 } else {
 
-    echo json_encode(array(last_round=>20,rounds=>30));
+    echo json_encode(array(last_round=>0,rounds=>0));
 
 
 }
 
 } else{
     
-    echo json_encode(array(last_round=>20,rounds=>30));
+    echo json_encode(array(last_round=>0,rounds=>0));
 
 }
 
