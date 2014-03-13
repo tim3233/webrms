@@ -1,0 +1,11 @@
+$def with (driverdata,title=None)
+<html><head>
+<title>my site\
+$if title: : $title\
+</title>
+</head><body>
+<h1><a href="/">PYWEBRMS</a></h1>
+$for driver in driverdata:
+    <li id="d$driver.id">$driver.id $driver.name</li>
+$# :page   
+</body></html>
