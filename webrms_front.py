@@ -3,7 +3,7 @@
 # -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Thu Mar 13, 2014  23:36
+#-Last modified:  Fri Mar 14, 2014  23:29
 #@author Felix Schueller
 #-----------------------------------------------------------
 
@@ -11,8 +11,13 @@ import web
 #import view, config
 #from view import render
 
+urls = (
+    '/', 'index',
+    '/setup', 'setup'
+)
+
 class driver:
-    next_id = 0
+    next_id = 1
     def __init__(self):
         self.id = driver.next_id
         self.name = "Not Set"
@@ -20,18 +25,28 @@ class driver:
 
 class index:
     def GET(self):
+        return render.base(listing(),"PyWebRMS")
 
-        alldrivers = list()
-        for i in range(6):
-            alldrivers.append(driver())
-        #return render.base(view.listing())
-        return render.base(alldrivers,"PyWebRMS")
+class setup:
+    def GET(self):
+        return render.setup()
 
-render = web.template.render('templates/')
+def listing():
+    return render.view()
 
-urls = (
-    '/', 'index'
+# FSS---set up 6 driver 
+alldrivers = list()
+print len(alldrivers)
+for i in range(6):
+    alldrivers.append(driver())
+
+# FSS---driver setup as global variable 
+t_globals = dict(
+          driver_setup=alldrivers,
 )
+
+render = web.template.render('templates/',globals=t_globals)
+render._keywords['globals']['render'] = render
 
 if __name__ == "__main__":
     app = web.application(urls, globals())
