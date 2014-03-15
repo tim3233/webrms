@@ -3,24 +3,28 @@ html, body {
     padding: 0;
     font-family: 'Oswald', sans-serif;
 }
+.rennergebnisse{
+    margin-top: 30px;
+    background-color: #FFF;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+    filter: alpha(opacity=70);
+    -moz-opacity: 0.7;
+    -khtml-opacity: 0.7;
+    opacity: 0.7;
+}
 
-/*.container {*/
-    /*//width:800px;*/
-    /*}*/
+.rennergebnisse{
+    font-weight: 200;
+    font-size: 26px;
+    line-height: 50px;
+}
 
-/*#body_container {*/
-    /*margin: 10px auto;*/
-    /*padding-bottom: 50px;*/
-    /*min-height: 100%;*/
-    /*text-align: center;*/
-    /*overflow: auto;*/
-    /*background : #AAA;*/
-    /*}*/
+.rennergebnisse .header{
+    font-weight: 600;
+    background-color: #000;
+    color: #FFF;
+}
 
-/*#footer_container {*/
-    /*text-align: center;*/
-    /*margin-top: -50px;*/
-    /*height: 50px;*/
-    /*background : #555;*/
-    /*overflow: auto;*/
-    /*}*/
+.rennergebnisse .lap-time{
+    font-weight: 600;
+}

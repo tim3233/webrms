@@ -4,16 +4,18 @@ $def with (page,title=None)
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/static/main_layout.css" media="screen" />
     <link href='http://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
-    <link href="static/bootstrap.min.css" rel="stylesheet" media="screen">
-    <script src="static/jquery-2.0.3.min.js"></script>
+ 
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="../../dist/css/bootstrap-theme.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="static/bootstrap.min.js"></script>
     <title>DEV\ 
     $if title: : $title\
     </title>
 </head><body>
-$#<div class="container" id="body_container">
-<div class="container" >
-<h1><a href="/">PYWEBRMS</a></h1>
+<div class="container rennergebnisse" >
+$#<h3><a href="/">PYWEBRMS</a></h3>
 $:page
 </div>
 <div class="container" id="footer_container">
