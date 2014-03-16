@@ -1,5 +1,6 @@
-$def with (page,title=None)
-<html><head>
+<!DOCTYPE html>
+<html>
+    <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="/static/main_layout.css" media="screen" />
@@ -10,16 +11,60 @@ $def with (page,title=None)
     <link href="static/bootstrap-theme.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="static/bootstrap.min.js"></script>
-    <title>DEV\ 
-    $if title: : $title\
-    </title>
-</head><body>
-<div class="container rennergebnisse" >
-$#<h3><a href="/">PYWEBRMS</a></h3>
-$:page
-</div>
-<div class="container" id="footer_container">
-Se footer Last update : xxxx
-                        </div>
-</body></html>
-
+    <!--<title>DEV\ -->
+    <!--$if title: : $title\-->
+    <!--</title>-->
+   <script type="text/javascript">
+        var ws;
+        var ws2;
+        function ws_test() {
+            var messageContainer = document.getElementById("messages");
+            if ("WebSocket" in window) {
+                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
+                ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
+                ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket
+               
+                 ws.onopen = function() {
+                    ws.send("Message to send");
+                };
+                ws.onmessage = function (evt) { 
+                    var received_msg = evt.data;
+                    obj = JSON.parse(evt.data);
+                    document.getElementById('last'+obj.id).innerHTML=obj.time;
+                    document.getElementById('laps'+obj.id).innerHTML=obj.laps;
+                    document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
+                    messageContainer.innerHTML += evt.data;
+                    messageContainer.innerHTML += obj.time;
+                };
+                
+                ws2.onopen = function() {
+                    ws2.send("M2 to send");
+                };
+                ws2.onmessage = function (evt) { 
+                    var received_msg = evt.data;
+                    messageContainer.innerHTML += evt.data;
+                };
+                ws.onclose = function() { 
+                    messageContainer.innerHTML += "Connection is closed...";
+                };
+            } else {
+                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
+            }
+        }
+        function cmd_ws(cmd) {
+            window.ws2.send(cmd);
+        }
+        </script>
+    </head>
+    <body>
+        <a href="javascript:ws_test()">Run WebSocket</a>
+        <a href="javascript:cmd_ws('status')">Status WebSocket</a>
+        <div class="container rennergebnisse" >
+            {% block fahrer %}{% end %}
+        </div>
+        <div class="container" id="footer_container">
+            <div id="messages" style="height:50px;background:black;color:white;"></div>
+            Se footer Last update : xxxx
+        </div>
+    </body>
+</html>
