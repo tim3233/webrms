@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  22:06
+#-Last modified:  Mon Mar 17, 2014  22:50
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -45,7 +45,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         if self.id == '1': # This is the data socket
             #self.write_message("Client %s received a message : %s" % (self.id, message))
             global dt # so data thread is checkable by other functions
-            dt = threading.Thread(target=webrms_logger.logger,args=[self,clients[0]])
+            dt = threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True])
             # dt = threading.Thread(target=handletest,args=[self])
             # rt = webrms_logger.logger(self)
             # print rt

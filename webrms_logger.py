@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Mon Mar 17, 2014  22:20
+# -Last modified:  Mon Mar 17, 2014  23:04
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -30,7 +30,7 @@ class setup_data():
     def __init__(self):
         self.fuelmode = 4 
 
-def logger(ws,ws_ctrl):
+def logger(ws,ws_ctrl,simulation = False):
     
     # FSS---set up 6 driver 
     c_data = dict()
@@ -44,18 +44,21 @@ def logger(ws,ws_ctrl):
         i = i+1
         print("Try # ",i)
         try:
-    #         # ser = serial.Serial('/dev/cu.NoZAP-PL2303-000013FA', 19200, timeout=0.05)
-            # ser = open('raw_data/car1_no_fuel_min.txt')
-            #ser = open('raw_data/car1_no_fuel.txt')
-            #ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
-            ser = open('raw_data/car4_fuel_real.txt')
+            if simulation :
+                # ser = open('raw_data/car1_no_fuel_min.txt')
+                #ser = open('raw_data/car1_no_fuel.txt')
+                #ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
+                ser = open('raw_data/car4_fuel_real.txt')
+            else:
+                ser = serial.Serial('/dev/cu.NoZAP-PL2303-000013FA', 19200, timeout=0.05)
 
             line_saved=0
             fuel_saved_1=0
             fuel_at_start=0
 
             while 1<2:
-    #             # ser.write("\"?")
+                if not simulation:
+                    ser.write("\"?")
                 line = ser.readline()
 
                 if line!=line_saved:
@@ -72,19 +75,25 @@ def logger(ws,ws_ctrl):
                     # M = Tankmodus 0: aus, 1: normal, 2: real
                     #   mit Pitlane +4
                     if first_bit == ":":
-                        # loop over all fuel bits
-                        for i in range(6):
-                            hex_string=ascii_string[i+2:i+3].encode('hex')[1:2]
-                            decimal = int(hex_string,16)
+                        # fuel mode
+                        hex_string=ascii_string[11:12].encode('hex')[1:2]
+                        # -4 removes pitlane info
+                        decimal = int(hex_string,16) - 4
+                        #if sd.fuelmode != decimal:
+                            #print "change in fuel mode", decimal
+                            #sd.fuelmode = decimal
+                        if decimal > 0 : #means fuel is used
+                            # loop over all fuel bits
+                            for i in range(6):
+                                hex_string=ascii_string[i+2:i+3].encode('hex')[1:2]
+                                decimal = int(hex_string,16)
+                                
+                                # if change is detected, set new fuel, send to websocket
+                                if int(c_data[i+1]['fuel']*15.0/100.0) != decimal:
+                                    print "fuel change car ",i+1,":",c_data[i+1]['fuel'], "->", decimal * 100./15.0
+                                    c_data[i+1]['fuel'] = decimal * 100.0/15.0
+                                    ws.write_message(c_data[i+1])
                             
-                            # if change is detected, set new fuel, send to websocket
-                            if int(c_data[i+1]['fuel']*15.0/100.0) != decimal:
-                                print "fuel change car ",i+1,":",c_data[i+1]['fuel'], "->", decimal * 100./15.0
-                                c_data[i+1]['fuel'] = decimal * 100.0/15.0
-                                ws.write_message(c_data[i+1])
-                        
-                        #print hex_string
-                        #print decimal
                         
                         # turned off for now
                         ## fuel mode
@@ -117,9 +126,10 @@ def logger(ws,ws_ctrl):
                         print c_data[cci]
 
                         t_in_s =  (decimal - c_data[cci]['prev'])/1000.0
-
-                        if t_in_s > 10 :
-                            t_in_s = 5
+                        
+                        if simulation:
+                            if t_in_s > 10 :
+                                t_in_s = 3 
                         
                         print t_in_s
 
@@ -141,10 +151,11 @@ def logger(ws,ws_ctrl):
     #                     # datafile.close()
                         line_saved=line
                         time.sleep(.02)
-                        time.sleep(t_in_s)
+                        #time.sleep(t_in_s)
         except:
             time.sleep(.02)
-            # continue
+            if not simulation:
+                continue
             break
         break
 
