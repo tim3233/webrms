@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  00:18
+#-Last modified:  Mon Mar 17, 2014  12:02
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -12,8 +12,9 @@ import threading
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-
 from tornado.options import define, options, parse_command_line
+
+import random
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -49,22 +50,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             dt = threading.Thread(target=handletest,args=[self])
             dt.start()
     
-
     def on_message(self, message):        
         """
         when we receive some message we want some message handler..
         """
-        print "Client %s received a message : %s" % (self.id, message)
         if self.id == '2': # this is the control socket
-            self.write_message("Client %s received a message : %s " % (self.id, message))
             if message == 'status':
                 if dt.is_alive():
-                    self.write_message(" alive <br>")
+                    self.write_message("alive")
                 else:
-                    self.write_message(" dead <br>")
+                    self.write_message("dead")
             #if message == 'close':
                #self.on_close_wrapper() 
-                
 
     def on_close_wrapper (self):
         """ 
@@ -89,14 +86,16 @@ def handletest(client):
     go = True
     while go: 
         d_data= dict()
-        d_data['id'] = 3
+        d_data['id'] = random.randint(0,5) 
         d_data['time'] = 0.22 +i
         d_data['fastest'] = 0.11 +i
         d_data['laps'] = i +1
+        # d_data['fuel'] = max(100 - i *10,0) 
+        d_data['fuel'] = random.randint(0,100) 
         client.write_message(d_data)
         i = i+1
         time.sleep(2)
-        if i > 7:
+        if i > 15:
             go = False
 
         #wsSend(" ")

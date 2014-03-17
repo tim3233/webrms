@@ -15,8 +15,14 @@
     <!--$if title: : $title\-->
     <!--</title>-->
    <script type="text/javascript">
-        var ws;
-        var ws2;
+        var ws; //data socket
+        var ws2; //control socket
+
+        window.onload=function(){
+          document.getElementById("statusBtn").style.display='none';
+          // document.getElementById("raceresults").style.display='none';
+        
+        }
         function ws_test() {
             var messageContainer = document.getElementById("messages");
             if ("WebSocket" in window) {
@@ -25,7 +31,10 @@
                 ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket
                
                  ws.onopen = function() {
-                    ws.send("Message to send");
+                    document.getElementById('startBtn').className = 'btn btn-sm btn-success'; 
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('statusBtn').style.display = 'block';
+                    document.getElementById("raceresults").style.display='block';
                 };
                 ws.onmessage = function (evt) { 
                     var received_msg = evt.data;
@@ -33,7 +42,19 @@
                     document.getElementById('last'+obj.id).innerHTML=obj.time;
                     document.getElementById('laps'+obj.id).innerHTML=obj.laps;
                     document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
-                    messageContainer.innerHTML += evt.data;
+                    fb = document.getElementById('fuel'+obj.id);
+                    fb.style.width= obj.fuel+'%';
+                    // Set fuel warning levels here 
+                    if (obj.fuel < 100) {
+                        fb.className='progress-bar progress-bar-success';
+                    }
+                    if (obj.fuel < 70) {
+                        fb.className='progress-bar progress-bar-warning';
+                    }
+                    if (obj.fuel < 40) {
+                        fb.className='progress-bar progress-bar-danger';
+                    }
+                    messageContainer.innerHTML = evt.data;
                     messageContainer.innerHTML += obj.time;
                 };
                 
@@ -41,11 +62,18 @@
                     ws2.send("M2 to send");
                 };
                 ws2.onmessage = function (evt) { 
-                    var received_msg = evt.data;
-                    messageContainer.innerHTML += evt.data;
+                    var rx_msg = evt.data;
+                    if (rx_msg == "alive") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-success'; 
+                    };
+                    if (rx_msg == "dead") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
+                        
+                    };
+                    messageContainer.innerHTML = evt.data;
                 };
                 ws.onclose = function() { 
-                    messageContainer.innerHTML += "Connection is closed...";
+                    messageContainer.innerHTML = "Connection is closed...";
                 };
             } else {
                 messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
@@ -57,9 +85,14 @@
         </script>
     </head>
     <body>
-        <a href="javascript:ws_test()">Run WebSocket</a>
-        <a href="javascript:cmd_ws('status')">Status WebSocket</a>
+
         <div class="container rennergebnisse" >
+            <div class="row">
+                <button type="button" id="startBtn" class="btn btn-sm btn-warning" onclick="ws_test();">Start Logger</button>
+                <button type="button" id="statusBtn" class="btn btn-sm btn-info" onclick="cmd_ws('status');">Check status Logger</button>
+            </div>
+        </div>
+        <div id="raceresults" class="container rennergebnisse" >
             {% block fahrer %}{% end %}
         </div>
         <div class="container" id="footer_container">
