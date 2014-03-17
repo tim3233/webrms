@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  12:02
+#-Last modified:  Mon Mar 17, 2014  14:54
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -13,7 +13,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 from tornado.options import define, options, parse_command_line
-
+import webrms_logger
 import random
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -43,11 +43,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.stream.set_nodelay(True)
         #clients[self.id] = {"id": self.id, "object": self}
         #wss.append(self)
-        print "WebSocket opened"
+        print "WebSocket" +str(self.id) + " opened"
         if self.id == '1': # This is the data socket
             #self.write_message("Client %s received a message : %s" % (self.id, message))
             global dt # so data thread is checkable by other functions
-            dt = threading.Thread(target=handletest,args=[self])
+            dt = threading.Thread(target=webrms_logger.logger,args=[self])
+            # dt = threading.Thread(target=handletest,args=[self])
+            # rt = webrms_logger.logger(self)
+            # print rt
+            # handletest(self)
             dt.start()
     
     def on_message(self, message):        
@@ -109,7 +113,7 @@ settings = dict(
 # FSS---set up 6 driver 
 alldrivers = list()
 print len(alldrivers)
-for i in range(6):
+for i in range(3):
     alldrivers.append(driver())
 
 
