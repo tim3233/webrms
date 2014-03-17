@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  22:50
+#-Last modified:  Mon Mar 17, 2014  23:21
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -18,8 +18,6 @@ import random
 
 define("port", default=8888, help="run on the given port", type=int)
 
-# we gonna store clients in dictionary..
-#clients = dict()
 clients =[]
 
 class driver:
@@ -39,17 +37,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         self.id = self.get_argument("Id")
         self.stream.set_nodelay(True)
-        #clients[self.id] = {"id": self.id, "object": self}
         clients.append(self)
         print "WebSocket" +str(self.id) + " opened"
         if self.id == '1': # This is the data socket
-            #self.write_message("Client %s received a message : %s" % (self.id, message))
             global dt # so data thread is checkable by other functions
+            # Last option set simulation (True) or real carerra cu (False)
             dt = threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True])
-            # dt = threading.Thread(target=handletest,args=[self])
-            # rt = webrms_logger.logger(self)
-            # print rt
-            # handletest(self)
             dt.start()
     
     def on_message(self, message):        
@@ -74,33 +67,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         
     def on_close(self):
         print 'Websocket closed', self.id
-        #if self.id in clients:
-            #del clients[self.id]
-        #if self in wss:
-            #wss.remove(self)
+        if self in clients:
+            clients.remove(self)
 
 def wsSend(message):
     for ws in wss:
         ws.write_message(message)
-
-def handletest(client):
-    i =0
-    go = True
-    while go: 
-        d_data= dict()
-        d_data['id'] = random.randint(0,5) 
-        d_data['time'] = 0.22 +i
-        d_data['fastest'] = 0.11 +i
-        d_data['laps'] = i +1
-        # d_data['fuel'] = max(100 - i *10,0) 
-        d_data['fuel'] = random.randint(0,100) 
-        client.write_message(d_data)
-        i = i+1
-        time.sleep(2)
-        if i > 15:
-            go = False
-
-        #wsSend(" ")
 
 settings = dict(
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
