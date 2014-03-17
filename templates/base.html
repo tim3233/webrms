@@ -27,8 +27,8 @@
             var messageContainer = document.getElementById("messages");
             if ("WebSocket" in window) {
                 messageContainer.innerHTML = "WebSocket is supported by your Browser!";
+                ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
                 ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
-                ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket
                
                  ws.onopen = function() {
                     document.getElementById('startBtn').className = 'btn btn-sm btn-success'; 
@@ -48,10 +48,10 @@
                     if (obj.fuel < 100) {
                         fb.className='progress-bar progress-bar-success';
                     }
-                    if (obj.fuel < 70) {
+                    if (obj.fuel < 45) {
                         fb.className='progress-bar progress-bar-warning';
                     }
-                    if (obj.fuel < 40) {
+                    if (obj.fuel < 20) {
                         fb.className='progress-bar progress-bar-danger';
                     }
                     messageContainer.innerHTML = evt.data;
@@ -68,8 +68,26 @@
                     };
                     if (rx_msg == "dead") {
                         document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
-                        
                     };
+                    // fast and hacky, for sure there's a better way to do this
+                    if (rx_msg == "fuel") {
+                        document.getElementById('fuel1').style.width = '100%'; 
+                        document.getElementById('fuel2').style.width = '100%'; 
+                        document.getElementById('fuel3').style.width = '100%'; 
+                        document.getElementById('fuel4').style.width = '100%'; 
+                        document.getElementById('fuel5').style.width = '100%'; 
+                        document.getElementById('fuel6').style.width = '100%'; 
+                    };
+                    if (rx_msg == "nofuel") {
+                        document.getElementById('fuel1').style.width = '0%'; 
+                        document.getElementById('fuel2').style.width = '0%'; 
+                        document.getElementById('fuel3').style.width = '0%'; 
+                        document.getElementById('fuel4').style.width = '0%'; 
+                        document.getElementById('fuel5').style.width = '0%'; 
+                        document.getElementById('fuel6').style.width = '0%'; 
+                    };
+
+
                     messageContainer.innerHTML = evt.data;
                 };
                 ws.onclose = function() { 

@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Mon Mar 17, 2014  16:44
+# -Last modified:  Mon Mar 17, 2014  22:20
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -13,6 +13,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 from tornado.options import define, options, parse_command_line
+import sys
 
 class controller_data(dict):
     next_id = 1
@@ -20,20 +21,23 @@ class controller_data(dict):
         self['id']=controller_data.next_id
         self['fastest']= 0.0
         self['time']= 0.0
-        self['fuel']= 0.0
+        self['fuel']= 100 
         self['laps']= 0
         self['prev']= 0.0
         controller_data.next_id += 1
 
+class setup_data():
+    def __init__(self):
+        self.fuelmode = 4 
 
-def logger(ws):
+def logger(ws,ws_ctrl):
     
     # FSS---set up 6 driver 
     c_data = dict()
-    for i in range(3):
-        # c_data.append(controller_data())
+    for i in range(6):
         c_data[i+1]= controller_data()
-    print c_data
+
+    sd = setup_data()
     
     i = 0
     while True:
@@ -42,9 +46,9 @@ def logger(ws):
         try:
     #         # ser = serial.Serial('/dev/cu.NoZAP-PL2303-000013FA', 19200, timeout=0.05)
             # ser = open('raw_data/car1_no_fuel_min.txt')
-            ser = open('raw_data/car1_no_fuel.txt')
-            # ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
-            # ser = open('raw_data/car4_fuel_real.txt')
+            #ser = open('raw_data/car1_no_fuel.txt')
+            #ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
+            ser = open('raw_data/car4_fuel_real.txt')
 
             line_saved=0
             fuel_saved_1=0
@@ -53,19 +57,13 @@ def logger(ws):
             while 1<2:
     #             # ser.write("\"?")
                 line = ser.readline()
-                print "raw line", line
-                # if line == '': # debug with file
-                #     break
-
 
                 if line!=line_saved:
 
                     ascii_string = line
-                    # print line
-
                     first_bit = ascii_string[1:2]
                     cc=first_bit
-                    # print "First bit: ",first_bit
+                    
                     # 1234567891011121314
                     # :TTTTTTVVS M B B A P$
                     # T = Tank Autos 1-6
@@ -74,17 +72,35 @@ def logger(ws):
                     # M = Tankmodus 0: aus, 1: normal, 2: real
                     #   mit Pitlane +4
                     if first_bit == ":":
-                        ascii_string2 = ascii_string[5:6]
-                        hex_string=ascii_string2[0:1].encode('hex')[1:2]
-                        print hex_string
-                        decimal = int(hex_string,16)
-                        print decimal
+                        # loop over all fuel bits
+                        for i in range(6):
+                            hex_string=ascii_string[i+2:i+3].encode('hex')[1:2]
+                            decimal = int(hex_string,16)
+                            
+                            # if change is detected, set new fuel, send to websocket
+                            if int(c_data[i+1]['fuel']*15.0/100.0) != decimal:
+                                print "fuel change car ",i+1,":",c_data[i+1]['fuel'], "->", decimal * 100./15.0
+                                c_data[i+1]['fuel'] = decimal * 100.0/15.0
+                                ws.write_message(c_data[i+1])
                         
-                        ascii_string2 = ascii_string[11:12]
-                        hex_string=ascii_string2[0:1].encode('hex')[1:2]
-                        print hex_string
-                        decimal = int(hex_string,16) - 4
-                        print decimal
+                        #print hex_string
+                        #print decimal
+                        
+                        # turned off for now
+                        ## fuel mode
+                        #hex_string=ascii_string[11:12].encode('hex')[1:2]
+                        ## -4 removes pitlane info
+                        #decimal = int(hex_string,16) - 4
+                        #if sd.fuelmode != decimal:
+                            #print "change in fuel mode", decimal
+                            #sd.fuelmode = decimal
+                            #if sd.fuelmode > 0 :
+                                #ws_ctrl.write_message("fuel")
+                            #else:
+                                #ws_ctrl.write_message("nofuel")
+
+                        time.sleep(.02)
+                        #line_saved=line
                         
 
                     
@@ -97,9 +113,11 @@ def logger(ws):
 
                         decimal=int(hex_string, 16)
                         cci = int(cc)
-                        timer=str(decimal);
+                        timer=str(decimal)
+                        print c_data[cci]
 
                         t_in_s =  (decimal - c_data[cci]['prev'])/1000.0
+
                         if t_in_s > 10 :
                             t_in_s = 5
                         
@@ -112,9 +130,8 @@ def logger(ws):
                         elif t_in_s < c_data[cci]['fastest']:
                             c_data[cci]['fastest'] = t_in_s 
                         
-                        c_data[cci]['fuel'] = random.randint(0,10) * 10
                         c_data[cci]['prev'] = decimal  
-                        # ws.write_message(c_data[cci])
+                        ws.write_message(c_data[cci])
 
     #                     # print("Car:" + car_controller)
     #                     # print("Timestamp:" + timer +"ms")

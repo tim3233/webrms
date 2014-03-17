@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  14:54
+#-Last modified:  Mon Mar 17, 2014  22:06
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -20,15 +20,14 @@ define("port", default=8888, help="run on the given port", type=int)
 
 # we gonna store clients in dictionary..
 #clients = dict()
-#wss =[]
+clients =[]
 
 class driver:
     next_id = 1
-    def __init__(self,name="Not Set"):
+    def __init__(self,name="Driver"):
         self.id = driver.next_id
         self.name = name 
         driver.next_id += 1
-
 
 class IndexHandler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
@@ -36,18 +35,17 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render("index.html", 
                     drivers=alldrivers)   
 
-
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         self.id = self.get_argument("Id")
         self.stream.set_nodelay(True)
         #clients[self.id] = {"id": self.id, "object": self}
-        #wss.append(self)
+        clients.append(self)
         print "WebSocket" +str(self.id) + " opened"
         if self.id == '1': # This is the data socket
             #self.write_message("Client %s received a message : %s" % (self.id, message))
             global dt # so data thread is checkable by other functions
-            dt = threading.Thread(target=webrms_logger.logger,args=[self])
+            dt = threading.Thread(target=webrms_logger.logger,args=[self,clients[0]])
             # dt = threading.Thread(target=handletest,args=[self])
             # rt = webrms_logger.logger(self)
             # print rt
@@ -64,7 +62,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                     self.write_message("alive")
                 else:
                     self.write_message("dead")
-            #if message == 'close':
+            #if message == 'fuel1':
                #self.on_close_wrapper() 
 
     def on_close_wrapper (self):
@@ -113,7 +111,7 @@ settings = dict(
 # FSS---set up 6 driver 
 alldrivers = list()
 print len(alldrivers)
-for i in range(3):
+for i in range(6):
     alldrivers.append(driver())
 
 
