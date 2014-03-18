@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Tue Mar 18, 2014  15:36
+# -Last modified:  Tue Mar 18, 2014  20:50
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -31,12 +31,11 @@ class controller_data(dict):
         self['laps']= 0
         self['prev']= 0.0
 
-
 class setup_data():
     def __init__(self):
         self.fuelmode = 4 
 
-def logger(ws,ws_ctrl,simulation = False):
+def logger(ws,simulation = False):
     
     # FSS---set up 6 driver 
     c_data = dict()

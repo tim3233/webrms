@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Tue Mar 18, 2014  15:00
+#-Last modified:  Tue Mar 18, 2014  20:50
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -20,6 +20,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 clients =[]
 dt = []
+simulation = True
 
 class driver:
     next_id = 1
@@ -65,11 +66,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 else: 
                     del(dt[0])
                     # Last option set simulation (True) or real carerra cu (False)
-                    dt.append(threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True]))
+                    dt.append(threading.Thread(target=webrms_logger.logger,args=[self,simulation]))
                     dt[0].start()
                     self.write_message("alive")
             except: #dt is undefined, so logger is started for first time
-                dt.append(threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True]))
+                dt.append(threading.Thread(target=webrms_logger.logger,args=[self,simulation]))
                 dt[0].start()
                 self.write_message("alive")
 
