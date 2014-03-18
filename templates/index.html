@@ -1,5 +1,66 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+        var ws; 
+
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete") {
+                ws_test();
+                setTimeout(function(){window.ws.send('start')}, 2000);
+            }
+        };
+        function ws_test() {
+            var messageContainer = document.getElementById("messages");
+            if ("WebSocket" in window) {
+                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
+                // ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
+                ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
+               
+                ws.onopen = function() {
+                    // document.getElementById("raceresults").style.display='block';
+                    messageContainer.innerHTML = "WebSocket openend";
+                };
+                ws.onmessage = function (evt) { 
+                    var rx_msg = evt.data;
+                    messageContainer.innerHTML = evt.data;
+                    if (rx_msg == "alive") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-success'; 
+                    } else if (rx_msg == "dead") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
+                    } else {
+                        obj = JSON.parse(evt.data);
+                        document.getElementById('last'+obj.id).innerHTML=obj.time;
+                        document.getElementById('laps'+obj.id).innerHTML=obj.laps;
+                        document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
+                        fb = document.getElementById('fuel'+obj.id);
+                        fb.style.width= obj.fuel+'%';
+                        // Set fuel warning levels here 
+                        if (obj.fuel < 100) {
+                            fb.className='progress-bar progress-bar-success';
+                        }
+                        if (obj.fuel < 45) {
+                            fb.className='progress-bar progress-bar-warning';
+                        }
+                        if (obj.fuel < 20) {
+                            fb.className='progress-bar progress-bar-danger';
+                        }
+                    }
+                };
+                ws.onclose = function() { 
+                    messageContainer.innerHTML = "Connection is closed...";
+                };
+            } else {
+                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
+            }
+        }
+        function cmd_ws(cmd) {
+            var messageContainer = document.getElementById("messages");
+            // messageContainer.innerHTML = window.ws.readyState;
+            // setTimeout(function(){window.ws.send(cmd)}, 2000);
+            window.ws.send(cmd);
+        }
+
+{% end %}
 
 {% block fahrer %}
   <div class="row">
@@ -39,7 +100,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-            Platz 
+            <!--Platz -->
             </div>
     </div>
 {% end %}

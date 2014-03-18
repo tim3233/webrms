@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Tue Mar 18, 2014  20:50
+#-Last modified:  Tue Mar 18, 2014  22:45
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -34,6 +34,25 @@ class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html", 
                     drivers=alldrivers)   
+
+class SetupHandler(tornado.web.RequestHandler):
+    @tornado.web.asynchronous
+    def get(self):
+        try:
+            if dt[0].is_alive():
+                print "here"
+                del(dt[0])
+                self.render("setup.html")   
+            else:
+                print "here 2"
+                self.render("setup.html")   
+        except:
+            print "here 3"
+            self.render("setup.html")   
+            print "except"
+        
+
+
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     last_msg = 'none'
@@ -82,12 +101,13 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.on_close()
         
     def on_close(self):
-        print 'Websocket closed', self.id
+        self.last_msg = 'stop'
         if self in clients:
             clients.remove(self)
+        print 'Websocket closed', self.id
 
 def wsSend(message):
-    for ws in wss:
+    for ws in clients:
         ws.write_message(message)
 
 settings = dict(
@@ -106,6 +126,7 @@ for i in range(6):
 
 app = tornado.web.Application([
     (r'/', IndexHandler),
+    (r'/Setup', SetupHandler),
     (r'/ws', WebSocketHandler),
     (r'/static/(.*)', tornado.web.StaticFileHandler),
 ],**settings)

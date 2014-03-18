@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Tue Mar 18, 2014  20:50
+# -Last modified:  Tue Mar 18, 2014  22:52
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -45,15 +45,16 @@ def logger(ws,simulation = False):
     sd = setup_data()
     
     i = 0
-    while True:
+    run = True
+    while run:
         i = i+1
-        print("Try # ",i)
+        #print("Try # ",i)
         try:
             if simulation :
                 # ser = open('raw_data/car1_no_fuel_min.txt')
-                ser = open('raw_data/car1_no_fuel.txt')
+                #ser = open('raw_data/car1_no_fuel.txt')
                 # ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
-                # ser = open('raw_data/car4_fuel_real.txt')
+                ser = open('raw_data/car4_fuel_real.txt')
             else:
                 ser = serial.Serial('/dev/cu.NoZAP-PL2303-000013FA', 19200, timeout=0.05)
 
@@ -61,7 +62,7 @@ def logger(ws,simulation = False):
             fuel_saved_1=0
             fuel_at_start=0
 
-            while True:
+            while run:
                 if not simulation:
                     ser.write("\"?")
                 line = ser.readline()
@@ -78,6 +79,7 @@ def logger(ws,simulation = False):
                     print "stopping logger"
                     ws.last_msg = 'none'
                     ws.write_message('dead')
+                    run = False
                     sys.exit()
 
 
@@ -157,6 +159,8 @@ def logger(ws,simulation = False):
                         c_data[cci]['laps'] += 1 
                         if c_data[cci]['laps'] == 1 :
                             c_data[cci]['fastest'] = t_in_s 
+                        elif t_in_s < 0 or t_in_s == 0.0:
+                            c_data[cci]['fastest'] = c_data[cci]['fastest'] #only for readability 
                         elif t_in_s < c_data[cci]['fastest']:
                             c_data[cci]['fastest'] = t_in_s 
                         
@@ -176,9 +180,9 @@ def logger(ws,simulation = False):
                             time.sleep(t_in_s)
         except:
             time.sleep(.02)
-            if not simulation:
-                continue
-            break
+            #if simulation:
+                #ser.seek(0,0)
+            continue
         break
 
 

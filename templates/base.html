@@ -11,68 +11,9 @@
     <link href="static/bootstrap-theme.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="static/bootstrap.min.js"></script>
-    <!--<title>DEV\ -->
-    <!--$if title: : $title\-->
-    <!--</title>-->
-   <script type="text/javascript">
-        var ws; 
-
-        document.onreadystatechange = function () {
-            if (document.readyState == "complete") {
-                ws_test();
-            }
-        };
-        function ws_test() {
-            var messageContainer = document.getElementById("messages");
-            if ("WebSocket" in window) {
-                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
-                // ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
-                ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
-               
-                ws.onopen = function() {
-                    // document.getElementById("raceresults").style.display='block';
-                    messageContainer.innerHTML = "WebSocket openend";
-                };
-                ws.onmessage = function (evt) { 
-                    var rx_msg = evt.data;
-                    messageContainer.innerHTML = evt.data;
-                    if (rx_msg == "alive") {
-                        document.getElementById('statusBtn').className = 'btn btn-sm btn-success'; 
-                    } else if (rx_msg == "dead") {
-                        document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
-                    } else {
-                        obj = JSON.parse(evt.data);
-                        document.getElementById('last'+obj.id).innerHTML=obj.time;
-                        document.getElementById('laps'+obj.id).innerHTML=obj.laps;
-                        document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
-                        fb = document.getElementById('fuel'+obj.id);
-                        fb.style.width= obj.fuel+'%';
-                        // Set fuel warning levels here 
-                        if (obj.fuel < 100) {
-                            fb.className='progress-bar progress-bar-success';
-                        }
-                        if (obj.fuel < 45) {
-                            fb.className='progress-bar progress-bar-warning';
-                        }
-                        if (obj.fuel < 20) {
-                            fb.className='progress-bar progress-bar-danger';
-                        }
-                    }
-                };
-                ws.onclose = function() { 
-                    messageContainer.innerHTML = "Connection is closed...";
-                };
-            } else {
-                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
-            }
-        }
-        function cmd_ws(cmd) {
-            var messageContainer = document.getElementById("messages");
-            // messageContainer.innerHTML = window.ws.readyState;
-            // setTimeout(function(){window.ws.send(cmd)}, 2000);
-            window.ws.send(cmd);
-        }
-        </script>
+    <script type="text/javascript">
+        {% block javascript %}{% end %}
+               </script>
     </head>
     <body>
     <div class="navbar navbar-inverse">
@@ -100,9 +41,7 @@
                   <li><a href="#">Driver 2</a></li>
                 </ul>
               </li>
-              <li><a href="#" onclick="cmd_ws('start');">Start logger</a></li>
-              <li><a href="#" onclick="cmd_ws('status');">Check status logger</a></li>
-              <li><a href="#" onclick="cmd_ws('stop');">Stop logger</a></li>
+              <!--<li><a href="/Setup">Driver Setup</a></li>-->
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -112,7 +51,9 @@
         </div>
         <div class="container" id="footer_container">
             <div id="messages" style="height:50px;background:black;color:white;"></div>
-            <button type="button" id="statusBtn" class="btn btn-sm btn-info">Status logger</button>
+            <button type="button" id="statusBtn" class="btn btn-sm btn-info" onclick="cmd_ws('status')">Status logger</button>
+            <button type="button" id="startBtn" class="btn btn-sm" onclick="cmd_ws('start');">Start logger</button>
+            <button type="button" id="stopBtn" class="btn btn-sm" onclick="cmd_ws('stop');">Stop logger</button>
             Se footer Last update : xxxx
         </div>
     </body>
