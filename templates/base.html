@@ -15,80 +15,49 @@
     <!--$if title: : $title\-->
     <!--</title>-->
    <script type="text/javascript">
-        var ws; //data socket
-        var ws2; //control socket
+        var ws; 
 
-        window.onload=function(){
-          document.getElementById("statusBtn").style.display='none';
-          // document.getElementById("raceresults").style.display='none';
-        
-        }
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete") {
+                ws_test();
+            }
+        };
         function ws_test() {
             var messageContainer = document.getElementById("messages");
             if ("WebSocket" in window) {
                 messageContainer.innerHTML = "WebSocket is supported by your Browser!";
-                ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
+                // ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
                 ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
                
-                 ws.onopen = function() {
-                    document.getElementById('startBtn').className = 'btn btn-sm btn-success'; 
-                    document.getElementById('startBtn').style.display = 'none';
-                    document.getElementById('statusBtn').style.display = 'block';
-                    document.getElementById("raceresults").style.display='block';
+                ws.onopen = function() {
+                    // document.getElementById("raceresults").style.display='block';
+                    messageContainer.innerHTML = "WebSocket openend";
                 };
                 ws.onmessage = function (evt) { 
-                    var received_msg = evt.data;
-                    obj = JSON.parse(evt.data);
-                    document.getElementById('last'+obj.id).innerHTML=obj.time;
-                    document.getElementById('laps'+obj.id).innerHTML=obj.laps;
-                    document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
-                    fb = document.getElementById('fuel'+obj.id);
-                    fb.style.width= obj.fuel+'%';
-                    // Set fuel warning levels here 
-                    if (obj.fuel < 100) {
-                        fb.className='progress-bar progress-bar-success';
-                    }
-                    if (obj.fuel < 45) {
-                        fb.className='progress-bar progress-bar-warning';
-                    }
-                    if (obj.fuel < 20) {
-                        fb.className='progress-bar progress-bar-danger';
-                    }
-                    messageContainer.innerHTML = evt.data;
-                    messageContainer.innerHTML += obj.time;
-                };
-                
-                ws2.onopen = function() {
-                    ws2.send("M2 to send");
-                };
-                ws2.onmessage = function (evt) { 
                     var rx_msg = evt.data;
+                    messageContainer.innerHTML = evt.data;
                     if (rx_msg == "alive") {
                         document.getElementById('statusBtn').className = 'btn btn-sm btn-success'; 
-                    };
-                    if (rx_msg == "dead") {
+                    } else if (rx_msg == "dead") {
                         document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
-                    };
-                    // fast and hacky, for sure there's a better way to do this
-                    if (rx_msg == "fuel") {
-                        document.getElementById('fuel1').style.width = '100%'; 
-                        document.getElementById('fuel2').style.width = '100%'; 
-                        document.getElementById('fuel3').style.width = '100%'; 
-                        document.getElementById('fuel4').style.width = '100%'; 
-                        document.getElementById('fuel5').style.width = '100%'; 
-                        document.getElementById('fuel6').style.width = '100%'; 
-                    };
-                    if (rx_msg == "nofuel") {
-                        document.getElementById('fuel1').style.width = '0%'; 
-                        document.getElementById('fuel2').style.width = '0%'; 
-                        document.getElementById('fuel3').style.width = '0%'; 
-                        document.getElementById('fuel4').style.width = '0%'; 
-                        document.getElementById('fuel5').style.width = '0%'; 
-                        document.getElementById('fuel6').style.width = '0%'; 
-                    };
-
-
-                    messageContainer.innerHTML = evt.data;
+                    } else {
+                        obj = JSON.parse(evt.data);
+                        document.getElementById('last'+obj.id).innerHTML=obj.time;
+                        document.getElementById('laps'+obj.id).innerHTML=obj.laps;
+                        document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
+                        fb = document.getElementById('fuel'+obj.id);
+                        fb.style.width= obj.fuel+'%';
+                        // Set fuel warning levels here 
+                        if (obj.fuel < 100) {
+                            fb.className='progress-bar progress-bar-success';
+                        }
+                        if (obj.fuel < 45) {
+                            fb.className='progress-bar progress-bar-warning';
+                        }
+                        if (obj.fuel < 20) {
+                            fb.className='progress-bar progress-bar-danger';
+                        }
+                    }
                 };
                 ws.onclose = function() { 
                     messageContainer.innerHTML = "Connection is closed...";
@@ -98,23 +67,52 @@
             }
         }
         function cmd_ws(cmd) {
-            window.ws2.send(cmd);
+            var messageContainer = document.getElementById("messages");
+            // messageContainer.innerHTML = window.ws.readyState;
+            // setTimeout(function(){window.ws.send(cmd)}, 2000);
+            window.ws.send(cmd);
         }
         </script>
     </head>
     <body>
-
-        <div class="container rennergebnisse" >
-            <div class="row">
-                <button type="button" id="startBtn" class="btn btn-sm btn-warning" onclick="ws_test();">Start Logger</button>
-                <button type="button" id="statusBtn" class="btn btn-sm btn-info" onclick="cmd_ws('status');">Check status Logger</button>
-            </div>
+    <div class="navbar navbar-inverse">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">PyWebrms</a>
+          </div>
+          <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <!-- <li class="active"><a href="#">Home</a></li> -->
+              <!-- <li><a href="#" onclick="ws_test();">Start socket</a></li> -->
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reset<b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#" onclick="cmd_ws('reset');">Reset ALL</a></li>
+                  <li class="divider"></li>
+                  <li class="dropdown-header">Reset Driver</li>
+                  <li><a href="#">Driver 1</a></li>
+                  <li><a href="#">Driver 2</a></li>
+                </ul>
+              </li>
+              <li><a href="#" onclick="cmd_ws('start');">Start logger</a></li>
+              <li><a href="#" onclick="cmd_ws('status');">Check status logger</a></li>
+              <li><a href="#" onclick="cmd_ws('stop');">Stop logger</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
         </div>
+      </div>
         <div id="raceresults" class="container rennergebnisse" >
             {% block fahrer %}{% end %}
         </div>
         <div class="container" id="footer_container">
             <div id="messages" style="height:50px;background:black;color:white;"></div>
+            <button type="button" id="statusBtn" class="btn btn-sm btn-info">Status logger</button>
             Se footer Last update : xxxx
         </div>
     </body>

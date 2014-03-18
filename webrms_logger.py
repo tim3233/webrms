@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Mon Mar 17, 2014  23:23
+# -Last modified:  Tue Mar 18, 2014  15:36
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -16,15 +16,21 @@ from tornado.options import define, options, parse_command_line
 import sys
 
 class controller_data(dict):
-    next_id = 1
-    def __init__(self):
-        self['id']=controller_data.next_id
+    def __init__(self,idin):
+        self['id']=idin
         self['fastest']= 0.0
         self['time']= 0.0
         self['fuel']= 100 
         self['laps']= 0
         self['prev']= 0.0
-        controller_data.next_id += 1
+
+    def reset(self):
+        self['fastest']= 0.0
+        self['time']= 0.0
+        self['fuel']= 100 
+        self['laps']= 0
+        self['prev']= 0.0
+
 
 class setup_data():
     def __init__(self):
@@ -35,7 +41,7 @@ def logger(ws,ws_ctrl,simulation = False):
     # FSS---set up 6 driver 
     c_data = dict()
     for i in range(6):
-        c_data[i+1]= controller_data()
+        c_data[i+1]= controller_data(i+1)
 
     sd = setup_data()
     
@@ -46,9 +52,9 @@ def logger(ws,ws_ctrl,simulation = False):
         try:
             if simulation :
                 # ser = open('raw_data/car1_no_fuel_min.txt')
-                #ser = open('raw_data/car1_no_fuel.txt')
-                #ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
-                ser = open('raw_data/car4_fuel_real.txt')
+                ser = open('raw_data/car1_no_fuel.txt')
+                # ser = open('raw_data/car2_fuel_on_over_pitlane.txt')
+                # ser = open('raw_data/car4_fuel_real.txt')
             else:
                 ser = serial.Serial('/dev/cu.NoZAP-PL2303-000013FA', 19200, timeout=0.05)
 
@@ -56,10 +62,25 @@ def logger(ws,ws_ctrl,simulation = False):
             fuel_saved_1=0
             fuel_at_start=0
 
-            while 1<2:
+            while True:
                 if not simulation:
                     ser.write("\"?")
                 line = ser.readline()
+                
+                # Driver data reset
+                if ws.last_msg == 'reset':
+                    for i in range(6):
+                        c_data[i+1].reset()
+                    ws.last_msg = 'none' 
+                    print "reset driver data"
+                
+                # Stop logger
+                if ws.last_msg == 'stop':
+                    print "stopping logger"
+                    ws.last_msg = 'none'
+                    ws.write_message('dead')
+                    sys.exit()
+
 
                 if line!=line_saved:
 
@@ -109,7 +130,7 @@ def logger(ws,ws_ctrl,simulation = False):
                                 #ws_ctrl.write_message("nofuel")
 
                         time.sleep(.02)
-                        #line_saved=line
+                        line_saved=line
                         
 
                     
@@ -123,7 +144,7 @@ def logger(ws,ws_ctrl,simulation = False):
                         decimal=int(hex_string, 16)
                         cci = int(cc)
                         timer=str(decimal)
-                        print c_data[cci]
+                        # print c_data[cci]
 
                         t_in_s =  (decimal - c_data[cci]['prev'])/1000.0
                         
@@ -151,7 +172,9 @@ def logger(ws,ws_ctrl,simulation = False):
     #                     # datafile.close()
                         line_saved=line
                         time.sleep(.02)
-                        #time.sleep(t_in_s)
+                        
+                        if simulation:
+                            time.sleep(t_in_s)
         except:
             time.sleep(.02)
             if not simulation:
@@ -160,7 +183,7 @@ def logger(ws,ws_ctrl,simulation = False):
         break
 
 
-    # ser.close()
+    ser.close()
 
 
 if __name__ == '__main__':

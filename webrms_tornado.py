@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Mon Mar 17, 2014  23:21
+#-Last modified:  Tue Mar 18, 2014  15:00
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -19,6 +19,7 @@ import random
 define("port", default=8888, help="run on the given port", type=int)
 
 clients =[]
+dt = []
 
 class driver:
     next_id = 1
@@ -34,29 +35,43 @@ class IndexHandler(tornado.web.RequestHandler):
                     drivers=alldrivers)   
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
+    last_msg = 'none'
     def open(self, *args):
         self.id = self.get_argument("Id")
         self.stream.set_nodelay(True)
         clients.append(self)
         print "WebSocket" +str(self.id) + " opened"
-        if self.id == '1': # This is the data socket
-            global dt # so data thread is checkable by other functions
-            # Last option set simulation (True) or real carerra cu (False)
-            dt = threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True])
-            dt.start()
+        # global dt # so data thread is checkable by other functions
     
     def on_message(self, message):        
         """
         when we receive some message we want some message handler..
         """
-        if self.id == '2': # this is the control socket
-            if message == 'status':
-                if dt.is_alive():
+        print "Received ",self.id, message
+        self.last_msg = message
+        if message == 'status':
+            try:
+                if dt[0].is_alive():
                     self.write_message("alive")
                 else:
                     self.write_message("dead")
-            #if message == 'fuel1':
-               #self.on_close_wrapper() 
+            except:
+                self.write_message("dead")
+        
+        if message == 'start':
+            try:
+                if dt[0].is_alive(): #dt is alive, do nothing
+                    self.write_message("alive")
+                else: 
+                    del(dt[0])
+                    # Last option set simulation (True) or real carerra cu (False)
+                    dt.append(threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True]))
+                    dt[0].start()
+                    self.write_message("alive")
+            except: #dt is undefined, so logger is started for first time
+                dt.append(threading.Thread(target=webrms_logger.logger,args=[self,clients[0],True]))
+                dt[0].start()
+                self.write_message("alive")
 
     def on_close_wrapper (self):
         """ 
