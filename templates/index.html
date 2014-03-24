@@ -62,10 +62,12 @@
 
         // Editable elements
         $(document).ready(function() {
+            $.fn.editable.defaults.ajaxOptions = {type: "GET"};
             for (var i=1; i<=6; i++) {
                 $('#driver' + i).editable();
             }
         });
+
 
 {% end %}
 
@@ -88,8 +90,8 @@
 {% for driver in drivers %}
     <div class="row">
             <div class="col-md-4">
-            #{{driver.id}} <a href="#" id="driver{{driver.id}}" data-type="text" data-pk="{{driver.id}}"
-                             data-title="Enter driver name">{{driver.name}}</a>
+            #{{driver.id}} <a href="#" id="driver{{driver.id}}" data-name="drivername" data-type="text" data-pk="{{driver.id}}"
+                             data-title="Enter driver name" data-url="/driversetup">{{driver.name}}</a>
             </div>
             <div class="col-md-3" id="last{{driver.id}}">
             0.000
