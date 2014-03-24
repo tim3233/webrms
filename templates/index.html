@@ -60,6 +60,13 @@
             window.ws.send(cmd);
         }
 
+        // Editable elements
+        $(document).ready(function() {
+            for (var i=1; i<=6; i++) {
+                $('#driver' + i).editable();
+            }
+        });
+
 {% end %}
 
 {% block fahrer %}
@@ -81,7 +88,8 @@
 {% for driver in drivers %}
     <div class="row">
             <div class="col-md-4">
-            {{driver.name}} {{driver.id}}
+            #{{driver.id}} <a href="#" id="driver{{driver.id}}" data-type="text" data-pk="{{driver.id}}"
+                             data-title="Enter driver name">{{driver.name}}</a>
             </div>
             <div class="col-md-3" id="last{{driver.id}}">
             0.000
@@ -96,7 +104,7 @@
     <div class="row">
             <div class="col-md-9">
                 <div  class="progress">
-                    <div id="fuel{{driver.id}}"class="progress-bar progress-bar-success" role="progressbar" style="width: 0%"></div>
+                    <div id="fuel{{driver.id}}" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%"></div>
                 </div>
             </div>
             <div class="col-md-3">
