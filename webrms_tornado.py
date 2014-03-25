@@ -3,7 +3,7 @@
 #! -OUTPUT:
 #-DESCRIPTION:
 #-TODO:
-#-Last modified:  Tue Mar 18, 2014  22:45
+#-Last modified:  Tue Mar 25, 2014  13:47
 #@author Felix Schueller
 #-----------------------------------------------------------
 import os
@@ -38,22 +38,6 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render("index.html",
                     drivers=alldrivers)
 
-
-class SetupHandler(tornado.web.RequestHandler):
-    @tornado.web.asynchronous
-    def get(self):
-        try:
-            if dt[0].is_alive():
-                print "here"
-                del (dt[0])
-                self.render("setup.html")
-            else:
-                print "here 2"
-                self.render("setup.html")
-        except:
-            print "here 3"
-            self.render("setup.html")
-            print "except"
 
 
 class DriverSetupHandler(tornado.web.RequestHandler):
@@ -151,7 +135,6 @@ for i in range(6):
 
 app = tornado.web.Application([
                                   (r'/', IndexHandler),
-                                  (r'/Setup', SetupHandler),
                                   (r'/ws', WebSocketHandler),
                                   (r'/driversetup', DriverSetupHandler),
                                   (r'/static/(.*)', tornado.web.StaticFileHandler),

@@ -3,7 +3,7 @@
 # ! -OUTPUT:
 # -DESCRIPTION: based on webrms by tim
 # -TODO:
-# -Last modified:  Tue Mar 18, 2014  22:52
+# -Last modified:  Tue Mar 25, 2014  14:29
 # @author Felix Schueller
 # -----------------------------------------------------------
 import serial
@@ -68,11 +68,16 @@ def logger(ws,simulation = False):
                 line = ser.readline()
                 
                 # Driver data reset
-                if ws.last_msg == 'reset':
-                    for i in range(6):
-                        c_data[i+1].reset()
+                if "reset" in ws.last_msg:
+                    who = ws.last_msg.split('reset')[1]
+                    print who
+                    if who == 'a':
+                        for i in range(6):
+                            c_data[i+1].reset()
+                    else:
+                       c_data[int(who)].reset()
                     ws.last_msg = 'none' 
-                    print "reset driver data"
+                    print "reset driver data ",who
                 
                 # Stop logger
                 if ws.last_msg == 'stop':
