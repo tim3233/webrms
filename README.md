@@ -1,4 +1,5 @@
 PyWebrms is a python based slotcar race management system with a browser frontend.  
+
 Orignial code was forked from https://github.com/tim3233/webrms.
 
 Features:
@@ -7,10 +8,11 @@ Features:
 - Fuel display
 - Configurable driver names
 - Reset all or individual drivers
-- Simulation mode so no racetrack is required to develop on this code
+- Simulation mode so no racetrack is required to develop this code
 
 
 Requirements:
+
 
 pip install tornado
 
@@ -18,7 +20,7 @@ pip install pyserial
 
 frontend and server done with tornado (no apache/... needed)
 
-set your serial address in webpy_logger
+set the serial address of your data connection in webpy_logger
 
 set simulation flag to true or false in webpy_tornado
 
