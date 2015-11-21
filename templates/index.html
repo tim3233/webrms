@@ -59,58 +59,76 @@
             // setTimeout(function(){window.ws.send(cmd)}, 2000);
             window.ws.send(cmd);
         }
-
+	
         // Editable elements
         $(document).ready(function() {
             $.fn.editable.defaults.ajaxOptions = {type: "GET"};
             for (var i=1; i<=6; i++) {
-                $('#driver' + i).editable();
-            }
+                $('#driver' + i).editable({success: function(response, newValue) {
+                    if(response.success) {
+                        $('#avatar' + response.slot).css({"background-image": "url('static/avatar/" + newValue + ".jpg')"});
+                    }
+                }});
+                
+            };
         });
 
 
 {% end %}
 
 {% block fahrer %}
-  <div class="row">
-    <div class="col-md-4">
-    Driver 
+
+    <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-11">
+            <div class="row">
+                <div class="col-md-4">
+                Driver 
+                </div>
+                <div class="col-md-3">
+                last lap 
+                </div>
+                <div class="col-md-2">
+                laps 
+                </div>
+                 <div class="col-md-3">
+                fastest lap 
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-3">
-    last lap 
-    </div>
-    <div class="col-md-2">
-    laps 
-    </div>
-     <div class="col-md-3">
-    fastest lap 
-    </div>
-</div>
 
 {% for driver in drivers %}
     <div class="row">
-            <div class="col-md-4">
-            #{{driver.id}} <a href="#" id="driver{{driver.id}}" data-name="drivername" data-type="text" data-pk="{{driver.id}}"
-                             data-title="Enter driver name" data-url="/driversetup">{{driver.name}}</a>
-            </div>
-            <div class="col-md-3" id="last{{driver.id}}">
-            0.000
-            </div>
-            <div class="col-md-2" id="laps{{driver.id}}">
-            0 
-            </div>
-            <div class="col-md-3" id="fastest{{driver.id}}">
-            0.000 
-            </div>
-    </div>
-    <div class="row">
-            <div class="col-md-9">
-                <div  class="progress">
-                    <div id="fuel{{driver.id}}" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%"></div>
+            <div id="avatar{{driver.id}}" style="background-image: url('static/avatar/{{driver.name}}.jpg')" class="col-md-1 avatar"></div>
+            <div class=col-md-11>
+                <div class="row">
+                    <div class="col-md-4">
+                        #{{driver.id}} 
+                        <a href="#" id="driver{{driver.id}}" data-name="drivername" data-type="text" data-pk="{{driver.id}}"
+                                     data-title="Enter driver name" data-url="/driversetup">{{driver.name}}</a>
+                    </div>
+                    <div class="col-md-3" id="last{{driver.id}}">
+                    0.000
+                    </div>
+                    <div class="col-md-2" id="laps{{driver.id}}">
+                    0 
+                    </div>
+                    <div class="col-md-3" id="fastest{{driver.id}}">
+                    0.000 
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-            <!--Platz -->
+                <div class="row">
+                        <div class="col-md-11">
+                            <div  class="progress">
+                                <div id="fuel{{driver.id}}" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                        <!--Platz -->
+                        </div>
+                </div>
             </div>
     </div>
 {% end %}

@@ -54,7 +54,7 @@ class DriverSetupHandler(tornado.web.RequestHandler):
                 self.write({"success": False})
             else:
                 alldrivers[slot - 1].name = name
-                self.write({"success": True})
+                self.write({"success": True, "slot": slot})
         except:
             self.write({"success": False})
 
@@ -137,7 +137,7 @@ app = tornado.web.Application([
                                   (r'/', IndexHandler),
                                   (r'/ws', WebSocketHandler),
                                   (r'/driversetup', DriverSetupHandler),
-                                  (r'/static/(.*)', tornado.web.StaticFileHandler),
+                                  (r'/static/(.*)', tornado.web.StaticFileHandler)
                               ], **settings)
 
 if __name__ == '__main__':

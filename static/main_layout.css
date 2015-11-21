@@ -30,3 +30,10 @@ html, body {
 .rennergebnisse .lap-time{
     font-weight: 600;
 }
+
+div.avatar{
+    height: 90px;
+    background-repeat: no-repeat;
+    background-size:  100%;
+    
+}
