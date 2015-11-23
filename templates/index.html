@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+        var ws; 
+
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete") {
+                ws_test();
+                setTimeout(function(){window.ws.send('start')}, 2000);
+            }
+        };
+        function ws_test() {
+            var messageContainer = document.getElementById("messages");
+            if ("WebSocket" in window) {
+                messageContainer.innerHTML = "WebSocket is supported by your Browser!";
+                // ws2 = new WebSocket("ws://localhost:8888/ws?Id=2"); // control socket,needs to be started first
+                ws = new WebSocket("ws://localhost:8888/ws?Id=1"); // data socket
+               
+                ws.onopen = function() {
+                    // document.getElementById("raceresults").style.display='block';
+                    messageContainer.innerHTML = "WebSocket openend";
+                };
+                ws.onmessage = function (evt) { 
+                    var rx_msg = evt.data;
+                    messageContainer.innerHTML = evt.data;
+                    if (rx_msg == "alive") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-success'; 
+                    } else if (rx_msg == "dead") {
+                        document.getElementById('statusBtn').className = 'btn btn-sm btn-danger'; 
+                    } else {
+                        obj = JSON.parse(evt.data);
+                        document.getElementById('last'+obj.id).innerHTML=obj.time;
+                        document.getElementById('laps'+obj.id).innerHTML=obj.laps;
+                        document.getElementById('fastest'+obj.id).innerHTML=obj.fastest;
+                        fb = document.getElementById('fuel'+obj.id);
+                        fb.style.width= obj.fuel+'%';
+                        // Set fuel warning levels here 
+                        if (obj.fuel < 100) {
+                            fb.className='progress-bar progress-bar-success';
+                        }
+                        if (obj.fuel < 45) {
+                            fb.className='progress-bar progress-bar-warning';
+                        }
+                        if (obj.fuel < 20) {
+                            fb.className='progress-bar progress-bar-danger';
+                        }
+                    }
+                };
+                ws.onclose = function() { 
+                    messageContainer.innerHTML = "Connection is closed...";
+                };
+            } else {
+                messageContainer.innerHTML = "WebSocket NOT supported by your Browser!";
+            }
+        }
+        function cmd_ws(cmd) {
+            var messageContainer = document.getElementById("messages");
+            // messageContainer.innerHTML = window.ws.readyState;
+            // setTimeout(function(){window.ws.send(cmd)}, 2000);
+            window.ws.send(cmd);
+        }
+	
+        // Editable elements
+        $(document).ready(function() {
+            $.fn.editable.defaults.ajaxOptions = {type: "GET"};
+            for (var i=1; i<=6; i++) {
+                $('#driver' + i).editable({success: function(response, newValue) {
+                    if(response.success) {
+                        $('#avatar' + response.slot).css({"background-image": "url('static/avatar/" + newValue + ".jpg')"});
+                    }
+                }});
+                
+            };
+        });
+
+
+{% end %}
+
+{% block fahrer %}
+
+    <div class="row">
+        <div class="col-md-1">
+        </div>
+        <div class="col-md-11">
+            <div class="row">
+                <div class="col-md-4">
+                Driver 
+                </div>
+                <div class="col-md-3">
+                last lap 
+                </div>
+                <div class="col-md-2">
+                laps 
+                </div>
+                 <div class="col-md-3">
+                fastest lap 
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% for driver in drivers %}
+    <div class="row">
+            <div id="avatar{{driver.id}}" style="background-image: url('static/avatar/{{driver.name}}.jpg')" class="col-md-1 avatar"></div>
+            <div class=col-md-11>
+                <div class="row">
+                    <div class="col-md-4">
+                        #{{driver.id}} 
+                        <a href="#" id="driver{{driver.id}}" data-name="drivername" data-type="text" data-pk="{{driver.id}}"
+                                     data-title="Enter driver name" data-url="/driversetup">{{driver.name}}</a>
+                    </div>
+                    <div class="col-md-3" id="last{{driver.id}}">
+                    0.000
+                    </div>
+                    <div class="col-md-2" id="laps{{driver.id}}">
+                    0 
+                    </div>
+                    <div class="col-md-3" id="fastest{{driver.id}}">
+                    0.000 
+                    </div>
+                </div>
+                <div class="row">
+                        <div class="col-md-11">
+                            <div  class="progress">
+                                <div id="fuel{{driver.id}}" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                        <!--Platz -->
+                        </div>
+                </div>
+            </div>
+    </div>
+{% end %}
+
+<div class="row">
+    <div class="col-md-6">
+    Tabelle schnellste Runde (mit Rueckstand)
+    </div>
+    <div class="col-md-6">
+    Tabelle meiste Runden (mit Rueckstand)
+    </div>
+    
+</div>
+
+
+{% end %}

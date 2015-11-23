@@ -1,0 +1,56 @@
+$def with ()
+<div class="row">
+    <div class="col-md-4">
+    Fahrer
+    </div>
+    <div class="col-md-3">
+    letzte Runde
+    </div>
+    <div class="col-md-2">
+    Runden
+    </div>
+     <div class="col-md-3">
+    beste Runde
+    </div>
+</div>
+
+$for driver in driver_setup:
+    <div class="row">
+            <div class="col-md-4">
+            $driver.name $driver.id 
+            </div>
+            <div class="col-md-3">
+            0.000
+            </div>
+            <div class="col-md-2">
+            0 
+            </div>
+             <div class="col-md-3">
+            0.000 
+            </div>
+    </div>
+    <div class="row">
+            <div class="col-md-9">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-danger" style="width: 35%"><span class="sr-only">35% Complete (success)</span></div>
+                    <div class="progress-bar progress-bar-warning" style="width: 20%"><span class="sr-only">20% Complete (warning)</span></div>
+                    <div class="progress-bar progress-bar-success" style="width: 10%"><span class='sr-only'>10% Complete (danger)</span></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+            Platz 
+            </div>
+    </div>
+
+<div class="row">
+    <div class="col-md-6">
+    Tabelle schnellste Runde (mit Rueckstand)
+    </div>
+    <div class="col-md-6">
+    Tabelle meiste Runden (mit Rueckstand)
+    </div>
+    
+</div>
+
+    $#<p class="details">created $driver.name</p></p>
+    $#<li id="d$driver.id">$driver.id $driver.name</li>

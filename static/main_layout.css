@@ -1,17 +1,8 @@
-body{
+html, body {
     margin: 0;
     padding: 0;
-    /*background-image: url('../img/background.jpg');
-    background-attachment: fixed;*/
     font-family: 'Oswald', sans-serif;
 }
-
-.top-menu{
-    background-color: #000;
-    color: #FFF;
-    padding: 10px;
-}
-
 .rennergebnisse{
     margin-top: 30px;
     background-color: #FFF;
@@ -24,8 +15,10 @@ body{
 
 .rennergebnisse{
     font-weight: 200;
-    font-size: 32px;
-    line-height: 64px;
+    /* font-size: 16px; */
+    /* line-height: 30px; */
+    font-size: 24px;
+    line-height: 45px;
 }
 
 .rennergebnisse .header{
@@ -36,4 +29,11 @@ body{
 
 .rennergebnisse .lap-time{
     font-weight: 600;
+}
+
+div.avatar{
+    height: 90px;
+    background-repeat: no-repeat;
+    background-size:  100%;
+    
 }
